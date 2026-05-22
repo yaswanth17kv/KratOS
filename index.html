@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Fucking Tool</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  
+    <style>
+      body {
+        background-color: #f5f4f0;
+        font-family: sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #1a1a1a;
+      }
+
+      .app {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        width: 60px;
+        background: #ffffff;
+        border-right: 1px solid #e8e6e0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+        gap: 8px;
+      }
+
+      .nav-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 20px;
+      }
+
+      .nav-btn:hover {
+        background: #f5f4f0;
+      }
+
+      .nav-btn.active {
+        background: #f0ede6;
+      }
+
+      .main {
+        flex: 1;
+        padding: 32px;
+      }
+
+      .page {
+        display: none;
+      }
+
+      .page.active {
+        display: block;
+      }
+
+      h1 {
+        font-size: 24px;
+        margin-bottom: 6px;
+      }
+
+      p {
+        color: #888;
+        font-size: 14px;
+      }
+      
+    </style>
+  </head>
+  <body>
+
+    <div class="app">
+
+      <div class="sidebar">
+        <button class="nav-btn active" onclick="goPage('overview')">🏠</button>
+        <button class="nav-btn" onclick="goPage('add')">➕</button>
+        <button class="nav-btn" onclick="goPage('transactions')">📋</button>
+        <button class="nav-btn" onclick="goPage('insights')">📊</button>
+      </div>
+
+      <div class="main">
+
+        <div class="page active" id="page-overview">
+  <h1>Overview</h1>
+  <p>Your spending at a glance.</p>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:20px; max-width:560px;">
+
+    <div style="background:#fff; border:1px solid #e8e6e0; border-radius:12px; padding:16px;">
+      <div style="font-size:11px; color:#aaa; margin-bottom:6px;">TOTAL SPENT</div>
+      <div id="s-total" style="font-size:22px; font-weight:600;">₹0</div>
+    </div>
+
+    <div style="background:#fff; border:1px solid #e8e6e0; border-radius:12px; padding:16px;">
+      <div style="font-size:11px; color:#aaa; margin-bottom:6px;">TRANSACTIONS</div>
+      <div id="s-count" style="font-size:22px; font-weight:600;">0</div>
+    </div>
+
+    <div style="background:#fff; border:1px solid #e8e6e0; border-radius:12px; padding:16px;">
+      <div style="font-size:11px; color:#aaa; margin-bottom:6px;">TOP CATEGORY</div>
+      <div id="s-top" style="font-size:16px; font-weight:600; padding-top:3px;">—</div>
+    </div>
+
+  </div>
+
+  <div style="background:#fff; border:1px solid #e8e6e0; border-radius:12px; padding:20px; margin-top:16px; max-width:560px;">
+    <div style="font-size:11px; color:#aaa; margin-bottom:14px;">RECENT TRANSACTIONS</div>
+    <div id="ov-recent"></div>
+  </div>
+
+</div>
+
+        <div class="page" id="page-add">
+  <h1>Add Expense</h1>
+  <p>Log a new transaction.</p>
+
+  <div style="background:#fff; border:1px solid #e8e6e0; border-radius:12px; padding:24px; margin-top:20px; max-width:480px;">
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px; color:#888; display:block; margin-bottom:5px;">Description</label>
+      <input id="f-desc" type="text" placeholder="e.g. Lunch, Gym membership..."
+        style="width:100%; padding:9px 12px; border:1px solid #e8e6e0; border-radius:8px; font-size:14px; outline:none;" />
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px; color:#888; display:block; margin-bottom:5px;">Amount (₹)</label>
+      <input id="f-amt" type="number" placeholder="350"
+        style="width:100%; padding:9px 12px; border:1px solid #e8e6e0; border-radius:8px; font-size:14px; outline:none;" />
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px; color:#888; display:block; margin-bottom:5px;">Category</label>
+      <select id="f-cat"
+        style="width:100%; padding:9px 12px; border:1px solid #e8e6e0; border-radius:8px; font-size:14px; outline:none; background:#fff;">
+        <option value="Food">Food & Dining</option>
+        <option value="Transport">Transport</option>
+        <option value="Fitness">Fitness</option>
+        <option value="Shopping">Shopping</option>
+        <option value="Entertainment">Entertainment</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <label style="font-size:12px; color:#888; display:block; margin-bottom:5px;">Date</label>
+      <input id="f-date" type="date"
+        style="width:100%; padding:9px 12px; border:1px solid #e8e6e0; border-radius:8px; font-size:14px; outline:none;" />
+    </div>
+
+    <button onclick="addExpense()"
+      style="width:100%; padding:10px; background:#1a1a1a; color:#fff; border:none; border-radius:8px; font-size:14px; cursor:pointer; font-weight:500;">
+      Add Expense
+    </button>
+    <div id="success-msg" style="display:none; margin-top:12px; background:#eefaf5; color:#0f6e56; border-radius:8px; padding:10px 14px; font-size:13px; text-align:center;">
+      ✓ Expense added successfully!
+    </div>
+
+  </div>
+</div>
+
+<div class="page" id="page-transactions">
+  <h1>Transactions</h1>
+  <p>All your logged expenses.</p>
+
+  <div id="txn-list" style="margin-top:20px; max-width:560px;">
+    <p style="color:#bbb;">No expenses yet — add one first!</p>
+  </div>
+</div>
+
+       <div class="page" id="page-insights">
+  <h1>Insights</h1>
+  <p>Visual breakdown of your spending.</p>
+
+  <div style="background:#fff; border:1px solid #e8e6e0; border-radius:12px; padding:20px; margin-top:20px; max-width:560px;">
+    <div style="font-size:11px; color:#aaa; margin-bottom:16px;">SPENDING BY CATEGORY</div>
+    <div style="position:relative; height:260px;">
+      <canvas id="pieChart"></canvas>
+    </div>
+  </div>
+
+  <div style="background:#fff; border:1px solid #e8e6e0; border-radius:12px; padding:20px; margin-top:16px; max-width:560px;">
+    <div style="font-size:11px; color:#aaa; margin-bottom:16px;">CATEGORY BREAKDOWN</div>
+    <div id="ins-bars"></div>
+  </div>
+
+</div>
+
+      </div>
+
+    </div>
+
+renderOverview();
+<script>
+  var saved = localStorage.getItem('my_expenses');
+  var expenses = saved ? JSON.parse(saved) : [];
+
+  function getTodayDate() {
+    var now = new Date();
+    var yyyy = now.getFullYear();
+    var mm = String(now.getMonth() + 1).padStart(2, '0');
+    var dd = String(now.getDate()).padStart(2, '0');
+    return yyyy + '-' + mm + '-' + dd;
+  }
+
+  function goPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    event.currentTarget.classList.add('active');
+    if (name === 'overview') { renderOverview(); }
+    if (name === 'transactions') { renderTransactions(); }
+    if (name === 'insights') { renderInsights(); }
+  }
+
+  function addExpense() {
+    var desc = document.getElementById('f-desc').value;
+    var amt = document.getElementById('f-amt').value;
+    var cat = document.getElementById('f-cat').value;
+    var date = document.getElementById('f-date').value;
+
+    if (!desc || !amt || !date) {
+      alert('Please fill in all fields!');
+      return;
+    }
+
+    var newExpense = {
+      id: Date.now(),
+      desc: desc,
+      amount: parseFloat(amt),
+      category: cat,
+      date: date
+    };
+
+    expenses.push(newExpense);
+    localStorage.setItem('my_expenses', JSON.stringify(expenses));
+
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-amt').value = '';
+    document.getElementById('f-date').value = getTodayDate();
+
+    document.getElementById('success-msg').style.display = 'block';
+    setTimeout(function() { document.getElementById('success-msg').style.display = 'none'; }, 2000);
+  }
+
+  function renderTransactions() {
+    var container = document.getElementById('txn-list');
+
+    if (expenses.length === 0) {
+      container.innerHTML = '<p style="color:#bbb;">No expenses yet — add one first!</p>';
+      return;
+    }
+
+    var html = '';
+    for (var i = expenses.length - 1; i >= 0; i--) {
+      var e = expenses[i];
+      html += '<div style="background:#fff; border:1px solid #e8e6e0; border-radius:10px; padding:14px 16px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">'
+        + '<div>'
+        + '<div style="font-size:14px; font-weight:500;">' + e.desc + '</div>'
+        + '<div style="font-size:12px; color:#aaa; margin-top:3px;">' + e.category + ' · ' + e.date + '</div>'
+        + '</div>'
+        + '<div style="display:flex; align-items:center; gap:12px;">'
+        + '<div style="font-size:15px; font-weight:600; color:#c0392b;">-₹' + e.amount + '</div>'
+        + '<button onclick="deleteExpense(' + e.id + ')" style="background:none; border:none; color:#ccc; cursor:pointer; font-size:16px; padding:2px 6px; border-radius:5px;">✕</button>'
+        + '</div>'
+        + '</div>';
+    }
+
+    container.innerHTML = html;
+  }
+
+  function deleteExpense(id) {
+    expenses = expenses.filter(function(e) { return e.id !== id; });
+    localStorage.setItem('my_expenses', JSON.stringify(expenses));
+    renderTransactions();
+    renderOverview();
+  }
+
+  function renderOverview() {
+    var total = 0;
+    for (var i = 0; i < expenses.length; i++) {
+      total += expenses[i].amount;
+    }
+    document.getElementById('s-total').textContent = '₹' + Math.round(total).toLocaleString('en-IN');
+    document.getElementById('s-count').textContent = expenses.length;
+
+    var cats = {};
+    for (var i = 0; i < expenses.length; i++) {
+      var cat = expenses[i].category;
+      cats[cat] = (cats[cat] || 0) + expenses[i].amount;
+    }
+    var topCat = '—';
+    var topAmt = 0;
+    for (var c in cats) {
+      if (cats[c] > topAmt) { topAmt = cats[c]; topCat = c; }
+    }
+    document.getElementById('s-top').textContent = topCat;
+
+    var recent = document.getElementById('ov-recent');
+    if (expenses.length === 0) {
+      recent.innerHTML = '<p style="color:#bbb; font-size:13px;">No expenses yet.</p>';
+      return;
+    }
+    var html = '';
+    var last5 = expenses.slice(-5).reverse();
+    for (var i = 0; i < last5.length; i++) {
+      var e = last5[i];
+      html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f0ede6;">'
+        + '<div>'
+        + '<div style="font-size:13px; font-weight:500;">' + e.desc + '</div>'
+        + '<div style="font-size:11px; color:#aaa; margin-top:2px;">' + e.category + ' · ' + e.date + '</div>'
+        + '</div>'
+        + '<div style="font-size:14px; font-weight:600; color:#c0392b;">-₹' + e.amount + '</div>'
+        + '</div>';
+    }
+    recent.innerHTML = html;
+  }
+
+  var pieChart = null;
+
+  function renderInsights() {
+    var cats = {};
+    for (var i = 0; i < expenses.length; i++) {
+      var cat = expenses[i].category;
+      cats[cat] = (cats[cat] || 0) + expenses[i].amount;
+    }
+
+    var labels = Object.keys(cats);
+    var values = labels.map(function(k) { return Math.round(cats[k]); });
+    var colors = ['#e8a000', '#378add', '#1d9e75', '#8b5cf6', '#e24b4a', '#888780'];
+
+    if (pieChart) { pieChart.destroy(); }
+
+    if (labels.length === 0) {
+      document.getElementById('ins-bars').innerHTML = '<p style="color:#bbb; font-size:13px;">No data yet — add some expenses!</p>';
+      return;
+    }
+
+    pieChart = new Chart(document.getElementById('pieChart'), {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: values,
+          backgroundColor: colors,
+          borderColor: '#fff',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+
+    var total = values.reduce(function(s, v) { return s + v; }, 0);
+    var barsHtml = '';
+    for (var i = 0; i < labels.length; i++) {
+      var pct = total ? Math.round((values[i] / total) * 100) : 0;
+      barsHtml += '<div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">'
+        + '<div style="min-width:90px; font-size:12px; color:#555;">' + labels[i] + '</div>'
+        + '<div style="flex:1; background:#f0ede6; border-radius:4px; height:7px;">'
+        + '<div style="width:' + pct + '%; background:' + colors[i] + '; height:100%; border-radius:4px;"></div>'
+        + '</div>'
+        + '<div style="min-width:40px; font-size:12px; color:#aaa; text-align:right;">₹' + values[i] + '</div>'
+        + '</div>';
+    }
+    document.getElementById('ins-bars').innerHTML = barsHtml;
+  }
+
+  renderOverview();
+  document.getElementById('f-date').value = getTodayDate();
+</script>
+
+  </body>
+</html>
