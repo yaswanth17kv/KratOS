@@ -1,2 +1,2 @@
 # KratOS
-KratOS - OS for tracking Personal growth
+KratOS - Your personal life tracker.
